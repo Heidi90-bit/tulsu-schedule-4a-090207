@@ -1,0 +1,32 @@
+name: Refresh TulGU schedule
+on:
+  schedule:
+    - cron: '13,43 * * * *'
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['update.mjs', '.github/workflows/schedule.yml']
+permissions:
+  contents: write
+concurrency:
+  group: schedule-refresh
+  cancel-in-progress: false
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: node update.mjs
+      - name: Publish fresh schedule
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add schedule.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'Refresh public TulGU schedule'
+            git push
+          fi
