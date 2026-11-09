@@ -17,9 +17,10 @@ for(const row of raw){
  if(!Array.isArray(row.GROUPS)||!row.GROUPS.some(g=>g.GROUP_P?.toLowerCase()===group.toLowerCase())||row.GROUPS.some(g=>g.PRIM))throw new Error('Другая группа или появились подгруппы');
  const match=String(row.TIME_Z).match(/^(\d\d:\d\d)\s*-\s*(\d\d:\d\d)$/),parts=String(row.DATE_Z).split('.'),day=parts.reverse().join('-');
  if(!match||!slots.has(match[1])||!row.DISCIP||!/^\d{4}-\d{2}-\d{2}$/.test(day)||day<range.MIN_DATE||day>range.MAX_DATE)throw new Error('Изменился формат расписания');
- const key=day+'|'+match[1];if(seen.has(key))throw new Error('Несколько занятий одновременно');seen.add(key);
+ const key=day+'|'+match[1];if(seen.has(key))console.log('::warning::ТулГУ указал несколько строк на '+key+'. Журнал сохранит спорную пару и обновит остальные.');seen.add(key);
 }
 const file='schedule.json',temporary=file+'.tmp';
 await fs.writeFile(temporary,JSON.stringify({version:1,group,source:'https://tulsu.ru/schedule/',fetchedAt:new Date().toISOString(),range,raw,times})+'\n');
 await fs.rename(temporary,file);
 console.log(`Обновлено: ${raw.length} пар, ${range.MIN_DATE} — ${range.MAX_DATE}`);
+
